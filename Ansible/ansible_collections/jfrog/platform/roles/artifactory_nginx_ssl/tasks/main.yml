@@ -6,7 +6,7 @@
     - certificate_key
     - server_name
 
-- name: Install prerequisite packages
+- name: Configure prerequisites
   include_tasks: "{{ ansible_os_family }}.yml"
 
 - name: Install nginx

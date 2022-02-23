@@ -1,0 +1,8 @@
+---
+- name: Converge
+  hosts: all
+  become: yes
+  tasks:
+    - name: Include artifactory_nginx_ssl
+      include_role:
+        name: artifactory_nginx_ssl

@@ -1,0 +1,31 @@
+---
+driver:
+  name: vagrant
+platforms:
+  - name: nginx-centos7
+    box: generic/centos7
+    groups:
+      - molecule
+  - name: nginx-rocky8
+    box: generic/rocky8
+    groups:
+      - molecule
+  - name: nginx-ubuntu1804
+    box: generic/ubuntu1804
+    groups:
+      - molecule
+  - name: nginx-ubuntu2004
+    box: generic/ubuntu2004
+    groups:
+      - molecule
+provisioner:
+  name: ansible
+  inventory:
+    links:
+      group_vars: group_vars/
+verifier:
+  name: ansible
+lint: |
+  set -e
+  yamllint .
+  ansible-lint  -x role-name .

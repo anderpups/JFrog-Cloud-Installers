@@ -3,6 +3,12 @@
 ## For production deployments,You SHOULD change it.
 # server_name: test.artifactory.com
 
+install_nginx_repo: true
+
 nginx_daemon: nginx
 
 redirect_http_to_https_enabled: true
+
+docker_subdomain_enabled: false
+
+configure_selinux: true

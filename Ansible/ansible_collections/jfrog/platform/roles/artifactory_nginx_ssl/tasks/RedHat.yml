@@ -1,27 +1,58 @@
-- name: Import nginx signing key
-  become: yes
-  rpm_key:
-    key: https://nginx.org/keys/nginx_signing.key
-    state: present
+---
+- name: Install Nginx repo
+  block:
+    - name: Import nginx signing key
+      become: yes
+      rpm_key:
+        key: https://nginx.org/keys/nginx_signing.key
+        state: present
 
-- name: Add nginx stable repo
-  become: yes
-  copy:
-    dest: /etc/yum.repos.d/nginx-stable.repo
-    owner: root
-    group: root
-    mode: '0644'
-    content: |
-        [nginx-stable]
-        name=nginx stable repo
-        baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
-        gpgcheck=1
-        enabled=1
-        gpgkey=https://nginx.org/keys/nginx_signing.key
-        module_hotfixes=true
+    - name: Add nginx stable repo
+      become: yes
+      copy:
+        dest: /etc/yum.repos.d/nginx-stable.repo
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+            [nginx-stable]
+            name=nginx stable repo
+            baseurl=http://nginx.org/packages/centos/$releasever/$basearch/
+            gpgcheck=1
+            enabled=1
+            gpgkey=https://nginx.org/keys/nginx_signing.key
+            module_hotfixes=true
 
-- name: Update yum cache
-  become: yes
-  yum:
-    state: present
-    update_cache: yes
+    - name: Update yum cache
+      become: yes
+      yum:
+        state: present
+        update_cache: yes
+  when: install_nginx_repo
+
+- name: Configure selinux
+  block:
+    - name: install semanage on EL7
+      package:
+        name: policycoreutils-python
+        state: present
+      when: ansible_distribution_major_version | int == 7
+
+    - name: install semanage
+      package:
+        name: policycoreutils-python-utils
+        state: present
+      when: ansible_distribution_major_version | int == 8
+
+    - name: Enable selinux Booleans
+      ansible.posix.seboolean:
+        name: httpd_can_network_connect
+        state: true
+        persistent: true
+
+    - name: Set default selinux context for files in the directory
+      community.general.sefcontext:
+        target: '/var/opt/jfrog/nginx/ssl(/.*)?'
+        ftype: a
+        setype: httpd_config_t
+  when: configure_selinux
